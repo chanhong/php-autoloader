@@ -516,6 +516,31 @@ class TestAutoloader extends PHPUnit_Framework_TestCase
 
         return $cases;
     }
+    
+    /**
+     * buildIndex() won't fail if a class is defined multiple times in the same
+     * file.
+     * 
+     * Some popular frameworks do use that pattern to define a class conditional
+     * in the same file.
+     * 
+     * @test
+     * @see Autoloader::buildIndex()
+     * @link https://github.com/malkusch/php-autoloader/pull/6
+     */
+    public function testBuildIndexSupportsSameClassInSameFile()
+    {
+        $directory  = "testBuildIndexSupportsSameClassInSameFile";
+        $testHelper = new AutoloaderTestHelper($this);
+        $definition = "<?php if (true) { class %name%{} } else { class %name%{} } ?>";
+        $testHelper->deleteDirectory("$directory/");
+        $class = $testHelper->makeClass('Test', "$directory/", $definition);
+        
+        $autoloader = new Autoloader($testHelper->getClassDirectory($directory));
+        $autoloader->buildIndex();
+        $foundPaths = $autoloader->getIndex()->getPaths();
+        $this->assertEquals($this->_getPaths([$class], $testHelper), $foundPaths);
+    }
 
     /**
      * Returns a list of paths for the list of classes
