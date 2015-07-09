@@ -160,10 +160,11 @@ abstract class AutoloaderIndex_File extends AutoloaderIndex
     public function getIndexPath()
     {
         if (empty($this->_path)) {
+            $class = new \ReflectionClass($this);
             $this->setIndexPath(
                 \sys_get_temp_dir()
                 . DIRECTORY_SEPARATOR
-                . \get_class($this)
+                . $class->getShortName()
                 . $this->getContext()
             );
 
